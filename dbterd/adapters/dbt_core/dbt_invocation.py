@@ -89,7 +89,7 @@ class DbtInvocation:
             raise click.UsageError(message)
 
     def get_selection(
-        self, select_rules: List[str] = [], exclude_rules: List[str] = []
+        self, select_rules: List[str] = [], exclude_rules: List[str] = [], resource_types: List[str] = ["model"]
     ) -> List[str]:
         """Get dbt selected models
 
@@ -100,7 +100,8 @@ class DbtInvocation:
         Returns:
             List[str]: Selected node names with 'exact' rule
         """
-        args = ["ls", "--resource-type", "model"]
+        args = ["ls"]
+        args.extend(["--resource-type", " ".join(resource_types)])
         if select_rules:
             args.extend(["--select", " ".join(select_rules)])
         if exclude_rules:
@@ -108,8 +109,9 @@ class DbtInvocation:
 
         result = self.__invoke(runner_args=args)
         return [
-            f"exact:model.{str(x).split('.')[0]}.{str(x).split('.')[-1]}"
-            for x in result
+            f"exact:{rt}.{str(x).split('.')[0]}.{str(x).split('.')[-1]}"
+            for x in result 
+            for rt in resource_types
         ]
 
     def get_artifacts_for_erd(self):

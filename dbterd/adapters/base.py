@@ -140,10 +140,10 @@ class Executor:
         """Override the Selection using dbt's one with `--dbt`"""
         if not self.dbt:
             raise click.UsageError("Flag `--dbt` need to be enabled")
-
         return self.dbt.get_selection(
             select_rules=kwargs.get("select"),
             exclude_rules=kwargs.get("exclude"),
+            resource_types=kwargs.get("resource_type")
         )
 
     def __read_manifest(self, mp: str, mv: int = None):
