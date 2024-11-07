@@ -235,7 +235,7 @@ def get_table(
                     manifest_node.identifier.lower()
                     if hasattr(manifest_node, "identifier")
                     else (
-                        manifest_node.alias.lower()
+                        manifest_node.alias
                         if hasattr(manifest_node, "alias")
                         else node_name
                     )
