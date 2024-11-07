@@ -133,15 +133,15 @@ def enrich_tables_from_relationships(
     copied_tables = copy.deepcopy(tables)
     for relationship in relationships:
         for table in copied_tables:
-            table_columns = [x.name.lower() for x in table.columns]
+            table_columns = [x.name for x in table.columns]
             if (
                 table.name == relationship.table_map[0]
-                and relationship.column_map[0].lower() not in table_columns
+                and relationship.column_map[0] not in table_columns
             ):
                 table.columns.append(Column(name=relationship.column_map[0]))
             if (
                 table.name == relationship.table_map[1]
-                and relationship.column_map[1].lower() not in table_columns
+                and relationship.column_map[1] not in table_columns
             ):
                 table.columns.append(Column(name=relationship.column_map[1]))
     return copied_tables
@@ -159,8 +159,8 @@ def get_table_from_metadata(model_metadata, exposures=[], **kwargs) -> Table:
     """
     node_name = model_metadata.get("node", {}).get("uniqueId")
     node_description = model_metadata.get("node", {}).get("description")
-    node_database = model_metadata.get("node", {}).get("database").lower()
-    node_schema = model_metadata.get("node", {}).get("schema").lower()
+    node_database = model_metadata.get("node", {}).get("database")
+    node_schema = model_metadata.get("node", {}).get("schema")
     node_name_parts = node_name.split(".")
     table = Table(
         name=get_table_name(
@@ -170,11 +170,11 @@ def get_table_from_metadata(model_metadata, exposures=[], **kwargs) -> Table:
                 package=node_name_parts[1],
                 model=node_name_parts[2],
                 database=node_database,
-                schema=model_metadata.get("node", {}).get("schema").lower(),
+                schema=model_metadata.get("node", {}).get("schema"),
                 table=(
                     model_metadata.get("node", {}).get("alias")
                     or model_metadata.get("node", {}).get("name")
-                ).lower(),
+                ),
             ),
         ),
         node_name=node_name,
@@ -195,8 +195,8 @@ def get_table_from_metadata(model_metadata, exposures=[], **kwargs) -> Table:
         for column in table_catalog.get("columns", []):
             table.columns.append(
                 Column(
-                    name=column.get("name", "").lower(),
-                    data_type=column.get("type", "").lower(),
+                    name=column.get("name", ""),
+                    data_type=column.get("type", ""),
                     description=column.get("description", ""),
                 )
             )
@@ -229,10 +229,10 @@ def get_table(
                 resource=node_name_parts[0],
                 package=node_name_parts[1],
                 model=node_name_parts[2],
-                database=manifest_node.database.lower(),
-                schema=manifest_node.schema_.lower(),
+                database=manifest_node.database,
+                schema=manifest_node.schema_,
                 table=(
-                    manifest_node.identifier.lower()
+                    manifest_node.identifier
                     if hasattr(manifest_node, "identifier")
                     else (
                         manifest_node.alias
@@ -244,8 +244,8 @@ def get_table(
         ),
         node_name=node_name,
         raw_sql=get_compiled_sql(manifest_node),
-        database=manifest_node.database.lower(),
-        schema=manifest_node.schema_.lower(),
+        database=manifest_node.database,
+        schema=manifest_node.schema_,
         columns=[],
         resource_type=node_name.split(".")[0],
         exposures=[
@@ -258,8 +258,8 @@ def get_table(
         for column, metadata in catalog_node.columns.items():
             table.columns.append(
                 Column(
-                    name=str(column).lower(),
-                    data_type=str(metadata.type).lower(),
+                    name=str(column),
+                    data_type=str(metadata.type),
                     description=metadata.comment or "",
                 )
             )
@@ -267,13 +267,13 @@ def get_table(
     for column_name, column_metadata in manifest_node.columns.items():
         column_name = column_name.strip('"')
         find_columns = [
-            c for c in table.columns if c.name.lower() == column_name.lower()
+            c for c in table.columns if c.name == column_name
         ]
         if not find_columns:
             table.columns.append(
                 Column(
                     name=column_name,
-                    data_type=str(column_metadata.data_type or "unknown").lower(),
+                    data_type=str(column_metadata.data_type or "unknown"),
                     description=column_metadata.description or "",
                 )
             )
@@ -376,7 +376,7 @@ def get_table_name(format: str, **kwargs) -> str:
     Returns:
         str: Qualified table name
     """
-    return ".".join([kwargs.get(x.lower()) or "KEYNOTFOUND" for x in format.split(".")])
+    return ".".join([kwargs.get(x) or "KEYNOTFOUND" for x in format.split(".")])
 
 
 def get_test_nodes_by_rule_name(manifest: Manifest, rule_name: str) -> List:
@@ -397,7 +397,7 @@ def get_test_nodes_by_rule_name(manifest: Manifest, rule_name: str) -> List:
         for x in manifest.nodes
         if (
             x.startswith("test")
-            and rule_name in x.lower()
+            and rule_name in x
             and manifest.nodes[x].meta.get(TEST_META_IGNORE_IN_ERD, "0") == "0"
         )
     ]
@@ -421,7 +421,7 @@ def get_relationships_from_metadata(data=[], **kwargs) -> List[Ref]:
             test_meta = test.get("node", {}).get("meta", {})
             if (
                 test_id.startswith("test")
-                and rule.get("name").lower() in test_id.lower()
+                and rule.get("name") in test_id
                 and test_meta is not None
                 and test_meta.get(TEST_META_IGNORE_IN_ERD, "0") == "0"
             ):
@@ -442,7 +442,7 @@ def get_relationships_from_metadata(data=[], **kwargs) -> List[Ref]:
                                 )
                             )
                             .replace('"', "")
-                            .lower(),
+                            ,
                             (
                                 test_metadata_kwargs.get("columnName")
                                 or test_metadata_kwargs.get(rule.get("c_from"))
@@ -453,7 +453,7 @@ def get_relationships_from_metadata(data=[], **kwargs) -> List[Ref]:
                                 )
                             )
                             .replace('"', "")
-                            .lower(),
+                            ,
                         ],
                         type=get_relationship_type(
                             test_meta.get(TEST_META_RELATIONSHIP_TYPE, "")
@@ -488,7 +488,7 @@ def get_relationships(manifest: Manifest, **kwargs) -> List[Ref]:
                     )
                 )
                 .replace('"', "")
-                .lower(),
+                ,
                 str(
                     manifest.nodes[x].test_metadata.kwargs.get("column_name")
                     or manifest.nodes[x].test_metadata.kwargs.get(rule.get("c_from"))
@@ -499,14 +499,14 @@ def get_relationships(manifest: Manifest, **kwargs) -> List[Ref]:
                     )
                 )
                 .replace('"', "")
-                .lower(),
+                ,
             ],
             type=get_relationship_type(
                 manifest.nodes[x].meta.get(TEST_META_RELATIONSHIP_TYPE, "")
             ),
         )
         for x in get_test_nodes_by_rule_name(
-            manifest=manifest, rule_name=rule.get("name").lower()
+            manifest=manifest, rule_name=rule.get("name")
         )
     ]
 
@@ -551,8 +551,8 @@ def get_relationships(manifest: Manifest, **kwargs) -> List[Ref]:
 #                     str(x[0]),
 #                 ],
 #                 column_map=[
-#                     to_model_columns_str.replace('"', "").lower(),
-#                     str(",".join(x[1].columns)).replace('"', "").lower(),
+#                     to_model_columns_str.replace('"', ""),
+#                     str(",".join(x[1].columns)).replace('"', ""),
 #                 ],
 #                 type="1n",  # cannot add `relationship_type` meta to constraints
 #             )
@@ -721,7 +721,7 @@ def get_table_map(test_node, **kwargs) -> List[str]:
 
     rule = get_algo_rule(**kwargs)
     to_model = str(test_node.test_metadata.kwargs.get(rule.get("t_to", "to"), {}))
-    if f'("{map[1].split(".")[-1]}")'.lower() in to_model.replace("'", '"').lower():
+    if f'("{map[1].split(".")[-1]}")' in to_model.replace("'", '"'):
         return [map[1], map[0]]
 
     return map
@@ -738,14 +738,14 @@ def get_relationship_type(meta: str) -> str:
             Short relationship type. Accepted values: '0n','01','11','nn','n1' and '1n'.
             And `1n` is default/fallback value
     """
-    if meta.lower() == "zero-to-many":
+    if meta == "zero-to-many":
         return "0n"
-    if meta.lower() == "zero-to-one":
+    if meta == "zero-to-one":
         return "01"
-    if meta.lower() == "one-to-one":
+    if meta == "one-to-one":
         return "11"
-    if meta.lower() == "many-to-many":
+    if meta == "many-to-many":
         return "nn"
-    if meta.lower() == "one-to-many":
+    if meta == "one-to-many":
         return "1n"
     return "n1"  # "many-to-one"
