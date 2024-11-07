@@ -99,7 +99,7 @@ def parse(manifest: Manifest, catalog: Catalog, **kwargs) -> str:
         types=[],
     )
 
-    return json.dumps(drawdb)
+    return json.dumps(drawdb,indent=2)
 
 
 def get_y(
