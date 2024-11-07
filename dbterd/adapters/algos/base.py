@@ -195,7 +195,7 @@ def get_table_from_metadata(model_metadata, exposures=[], **kwargs) -> Table:
         for column in table_catalog.get("columns", []):
             table.columns.append(
                 Column(
-                    name=column.get("name", ""),#.lower(),
+                    name=column.get("name", "").lower(),
                     data_type=column.get("type", "").lower(),
                     description=column.get("description", ""),
                 )
