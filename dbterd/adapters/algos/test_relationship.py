@@ -99,7 +99,7 @@ def find_related_nodes_by_id(
 
     rule = base.get_algo_rule(**kwargs)
     test_nodes = base.get_test_nodes_by_rule_name(
-        manifest=manifest, rule_name=rule.get("name").lower()
+        manifest=manifest, rule_name=rule.get("name")
     )
 
     for test_node in test_nodes:

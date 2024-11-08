@@ -74,7 +74,7 @@ def evaluate_rule(table: Table, rule: str) -> bool:
     and_parts = rule.split(",")
     results = []
     for x in and_parts:
-        rule_parts = x.lower().split(":")
+        rule_parts = x.split(":")
         type, rule = "name", rule_parts[0]
         if len(rule_parts) > 1:
             type, rule = tuple(rule_parts[:2])
@@ -113,7 +113,7 @@ def is_satisfied_by_exact(table: Table, rule: str = "") -> bool:
     """
     if not rule:
         return True
-    return table.node_name.lower() == rule
+    return table.node_name == rule
 
 
 def is_satisfied_by_schema(table: Table, rule: str = "") -> bool:
