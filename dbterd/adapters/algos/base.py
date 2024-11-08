@@ -272,7 +272,7 @@ def get_table(
         if not find_columns:
             table.columns.append(
                 Column(
-                    name=column_name,
+                    name=column_name.lower(),
                     data_type=str(column_metadata.data_type or "unknown").lower(),
                     description=column_metadata.description or "",
                 )
